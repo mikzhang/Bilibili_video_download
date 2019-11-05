@@ -139,10 +139,23 @@ def down_video(video_list, title, start_url, page):
             os.makedirs(currentVideoPath)
         # 开始下载
         if len(video_list) > 1:
-            urllib.request.urlretrieve(url=i, filename=os.path.join(currentVideoPath, r'{}-{}.flv'.format(title, num)),reporthook=Schedule_cmd)  # 写成mp4也行  title + '-' + num + '.flv'
+            # urllib.request.urlretrieve(url=i, filename=os.path.join(currentVideoPath, r'{}-{}.flv'.format(title, num)),reporthook=Schedule_cmd)  # 写成mp4也行  title + '-' + num + '.flv'
+            retry_down_while_err(url=i, filename=os.path.join(currentVideoPath, r'{}-{}.flv'.format(title, num)),reporthook=Schedule_cmd)  # 写成mp4也行  title + '-' + num + '.flv'
         else:
-            urllib.request.urlretrieve(url=i, filename=os.path.join(currentVideoPath, r'{}.flv'.format(title)),reporthook=Schedule_cmd)  # 写成mp4也行  title + '-' + num + '.flv'
+            # urllib.request.urlretrieve(url=i, filename=os.path.join(currentVideoPath, r'{}.flv'.format(title)),reporthook=Schedule_cmd)  # 写成mp4也行  title + '-' + num + '.flv'
+            retry_down_while_err(url=i, filename=os.path.join(currentVideoPath, r'{}.flv'.format(title)),reporthook=Schedule_cmd)  # 写成mp4也行  title + '-' + num + '.flv'
         num += 1
+
+
+#我们使用urllib.urlretrieve(url,filename)时经常遇到下载到一半时，出现urllib.ContentTooShortError错误。
+# 这是因为文件下载不完全导致的错误。我们可以使用 递归 的方法，即每次下载不完全时重新下载解决这个问题
+def retry_down_while_err(url, filename, reporthook):
+    try:
+        urllib.request.urlretrieve(url,filename, reporthook)
+    except urllib.error.ContentTooShortError:
+        print('Network conditions is not good.Reloading.')
+        retry_down_while_err(url, filename, reporthook)
+
 
 # 合并视频(20190802新版)
 def combine_video(title_list):
